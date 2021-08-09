@@ -1,28 +1,29 @@
 import { Component, OnInit } from '@angular/core';
-import { Select } from "@ngxs/store";
+import { Select, Store } from '@ngxs/store';
 import { Observable, Subject } from 'rxjs';
 
-import {
-   debounceTime, distinctUntilChanged, switchMap
- } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { Hero } from '../hero';
 import { HeroService } from '../hero.service';
+import { HeroSearch } from '../store/heroes.actions';
 
-import { HERO_STATE_TOKEN, HeroStateModel } from "../store/heroes.state"
-import { HeroSearch }
+import {
+  HERO_STATE_TOKEN,
+  HeroStateModel,
+  HeroState
+} from '../store/heroes.state';
 
 @Component({
   selector: 'app-hero-search',
   templateUrl: './hero-search.component.html',
-  styleUrls: [ './hero-search.component.css' ]
+  styleUrls: ['./hero-search.component.css']
 })
 export class HeroSearchComponent implements OnInit {
-  @Select(HERO_STATE_TOKEN) state$: Observable<HeroStateModel>;
-  heroes$: Observable<Hero[]>;
+  @Select(HeroState.heroesSearch) searchResults$: Observable<Hero[]>;
   private searchTerms = new Subject<string>();
 
-  constructor(private heroService: HeroService) {}
+  constructor(private store: Store) {}
 
   // Push a search term into the observable stream.
   search(term: string): void {
@@ -30,19 +31,20 @@ export class HeroSearchComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.heroes$ = this.searchTerms.pipe(
-      // wait 300ms after each keystroke before considering the term
-      debounceTime(300),
+    this.searchTerms
+      .pipe(
+        // wait 300ms after each keystroke before considering the term
+        debounceTime(300),
 
-      // ignore new term if same as previous term
-      distinctUntilChanged(),
+        // ignore new term if same as previous term
+        distinctUntilChanged(),
 
-      // switch to new search observable each time the term changes
-      switchMap((term: string) => this.heroService.searchHeroes(term)),
-    );
+        // switch to new search observable each time the term changes
+        switchMap((term: string) => this.store.dispatch(new HeroSearch(term)))
+      )
+      .subscribe();
   }
 }
-
 
 /*
 Copyright Google LLC. All Rights Reserved.

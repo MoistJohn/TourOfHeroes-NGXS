@@ -12,11 +12,14 @@ import { map } from 'rxjs/operators';
 })
 export class DashboardComponent implements OnInit {
   @Select(HERO_STATE_TOKEN) heroes$: Observable<HeroStateModel>;
-  heroesSlice$ = this.heroes$.pipe(map(model => model.heroes.slice(1, 5)));
+  heroesSlice$;
 
   constructor(private store: Store) {}
 
   ngOnInit() {
+    this.heroesSlice$ = this.heroes$.pipe(
+      map(model => model.heroes.slice(1, 5))
+    );
     this.getHeroes();
   }
 

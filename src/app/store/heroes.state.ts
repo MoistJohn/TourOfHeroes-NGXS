@@ -1,19 +1,28 @@
-import { State, Action, StateContext, StateToken, Selector } from "@ngxs/store";
-import { AddHero, StoreHeroes, DeleteHero, GetHeroes, HeroSearch } from "./heroes.actions";
-import { Hero } from "../hero";
-import { HeroService } from "../hero.service";
-import { catchError, map, tap } from "rxjs/operators";
+import { State, Action, StateContext, StateToken, Selector } from '@ngxs/store';
+import {
+  AddHero,
+  StoreHeroes,
+  DeleteHero,
+  GetHeroes,
+  HeroSearch,
+  ClearSearch
+} from './heroes.actions';
+import { Hero } from '../hero';
+import { HeroService } from '../hero.service';
+import { tap } from 'rxjs/operators';
 
 export interface HeroStateModel {
   heroes: Hero[];
+  heroesSearchResults: Hero[];
 }
 
-export const HERO_STATE_TOKEN = new StateToken<HeroStateModel>("hero");
+export const HERO_STATE_TOKEN = new StateToken<HeroStateModel>('hero');
 
 @State<HeroStateModel>({
   name: HERO_STATE_TOKEN,
   defaults: {
-    heroes: []
+    heroes: [],
+    heroesSearchResults: undefined
   }
 })
 export class HeroState {
@@ -24,27 +33,41 @@ export class HeroState {
     return state.heroes;
   }
 
-  @Action(HeroSearch)
-  searchHero(ctx: StateContext<HeroStateModel>, action: HeroSearch) {
-    this.heroService.searchHeroes(action.searchToken).pipe(
-      const state = ctx.getState();
-      for (let h of heroes) {
+  @Selector()
+  static heroesSearch(state: HeroStateModel): Hero[] {
+    return state.heroesSearchResults;
+  }
 
-      }
-    )
+  @Action(ClearSearch)
+  clearSearch(ctx: StateContext<HeroStateModel>) {
+    ctx.patchState({
+      heroesSearchResults: undefined
+    });
+  }
+
+  @Action(HeroSearch, { cancelUncompleted: true })
+  searchHero(ctx: StateContext<HeroStateModel>, action: HeroSearch) {
+    if (!action.searchToken) {
+      return ctx.dispatch(new ClearSearch());
+    }
+    return this.heroService
+      .searchHeroes(action.searchToken)
+      .pipe(tap(heroes => ctx.patchState({ heroesSearchResults: heroes })));
   }
 
   @Action(GetHeroes)
   getHeroes(ctx: StateContext<HeroStateModel>) {
-    return this.heroService.getHeroes().pipe(
-      tap(heroes => ctx.dispatch(new StoreHeroes(heroes, true)))
-    )
+    return this.heroService
+      .getHeroes()
+      .pipe(tap(heroes => ctx.dispatch(new StoreHeroes(heroes, true))));
   }
 
   @Action(StoreHeroes)
   storeHero(ctx: StateContext<HeroStateModel>, action: StoreHeroes): void {
     const state = ctx.getState();
-    const heroes = action.overwrite ? action.heroes : [...state.heroes, ...action.heroes];
+    const heroes = action.overwrite
+      ? action.heroes
+      : [...state.heroes, ...action.heroes];
     ctx.setState({
       ...state,
       heroes
@@ -53,9 +76,9 @@ export class HeroState {
 
   @Action(AddHero)
   addHero(ctx: StateContext<HeroStateModel>, action: AddHero) {
-    return this.heroService.addHero(action.hero).pipe(
-      tap(hero => ctx.dispatch(new StoreHeroes([hero])))
-    );
+    return this.heroService
+      .addHero(action.hero)
+      .pipe(tap(hero => ctx.dispatch(new StoreHeroes([hero]))));
   }
 
   @Action(DeleteHero)
