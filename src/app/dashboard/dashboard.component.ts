@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import { Select, Store } from '@ngxs/store';
 import { Observable } from 'rxjs';
 import { HERO_STATE_TOKEN, HeroStateModel } from '../store/heroes.state';
-import { GetHeroes } from '../store/heroes.actions';
+import { GetHeroes, SelectHero } from '../store/heroes.actions';
 import { map } from 'rxjs/operators';
+import { Hero } from '../hero';
 
 @Component({
   selector: 'app-dashboard',
@@ -25,6 +26,10 @@ export class DashboardComponent implements OnInit {
 
   getHeroes(): void {
     this.store.dispatch(new GetHeroes());
+  }
+  
+  heroClicked(hero: Hero) {
+    this.store.dispatch(new SelectHero(hero));
   }
 }
 
