@@ -30,5 +30,10 @@ export class ClearSearch {
 
 export class SelectHero {
   static readonly type = '[Hero] Select Hero';
+  constructor(public heroId: number) {}
+}
+
+export class UpdateHero {
+  static readonly type = '[Hero] Update Hero';
   constructor(public hero: Hero) {}
 }

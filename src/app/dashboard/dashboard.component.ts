@@ -29,7 +29,7 @@ export class DashboardComponent implements OnInit {
   }
   
   heroClicked(hero: Hero) {
-    this.store.dispatch(new SelectHero(hero));
+    this.store.dispatch(new SelectHero(hero.id));
   }
 }
 

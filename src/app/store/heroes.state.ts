@@ -6,12 +6,12 @@ import {
   GetHeroes,
   HeroSearch,
   ClearSearch,
-  SelectHero
+  SelectHero,
+  UpdateHero
 } from './heroes.actions';
 import { Hero } from '../hero';
 import { HeroService } from '../hero.service';
-import { switchMap, tap } from 'rxjs/operators';
-import { Navigate } from '@ngxs/router-plugin';
+import { map, tap } from 'rxjs/operators';
 import { Router } from '@angular/router';
 
 export interface HeroStateModel {
@@ -31,10 +31,7 @@ export const HERO_STATE_TOKEN = new StateToken<HeroStateModel>('hero');
   }
 })
 export class HeroState {
-  constructor(
-    private heroService: HeroService,
-    private router: Router,
-  ) {}
+  constructor(private heroService: HeroService, private router: Router) {}
 
   @Selector()
   static heroes(state: HeroStateModel): Hero[] {
@@ -53,10 +50,20 @@ export class HeroState {
 
   @Action(SelectHero)
   selectHero(ctx: StateContext<HeroStateModel>, action: SelectHero) {
-    return this.heroService.getHero(action.hero.id).pipe(
+    if (ctx.getState().selectedHero.id === action.heroId) {
+      return;
+    }
+    return this.heroService.getHero(action.heroId).pipe(
       tap(hero => ctx.patchState({ selectedHero: hero })),
       tap(hero => this.router.navigate([`/detail/${hero.id}`]))
     );
+  }
+
+  @Action(UpdateHero)
+  updateHero(ctx: StateContext<HeroStateModel>, action: UpdateHero) {
+    return this.heroService
+      .updateHero(action.hero)
+      .pipe(tap(() => ctx.patchState({ selectedHero: action.hero })));
   }
 
   @Action(ClearSearch)
