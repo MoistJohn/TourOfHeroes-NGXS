@@ -50,7 +50,7 @@ export class HeroState {
 
   @Action(SelectHero)
   selectHero(ctx: StateContext<HeroStateModel>, action: SelectHero) {
-    if (ctx.getState().selectedHero.id === action.heroId) {
+    if (ctx.getState().selectedHero?.id === action.heroId) {
       return;
     }
     return this.heroService.getHero(action.heroId).pipe(

@@ -5,7 +5,7 @@ import { Observable, Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 import { Hero } from '../hero';
-import { HeroSearch } from '../store/heroes.actions';
+import { HeroSearch, SelectHero } from '../store/heroes.actions';
 
 import { HeroState } from '../store/heroes.state';
 
@@ -38,6 +38,10 @@ export class HeroSearchComponent implements OnInit {
         switchMap((term: string) => this.store.dispatch(new HeroSearch(term)))
       )
       .subscribe();
+  }
+
+  select(id: number): void {
+    this.store.dispatch(new SelectHero(id));
   }
 }
 

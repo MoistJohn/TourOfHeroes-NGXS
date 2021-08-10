@@ -5,9 +5,9 @@
 
   <ul class="search-result">
     <li *ngFor="let hero of searchResults$ | async">
-      <a routerLink="/detail/{{hero.id}}">
+      <div (click)="select(hero.id)">
         {{hero.name}}
-      </a>
+      </div>
     </li>
   </ul>
 </div>

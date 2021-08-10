@@ -29,6 +29,7 @@ export class DashboardComponent implements OnInit {
   }
   
   heroClicked(hero: Hero) {
+    console.warn(hero);
     this.store.dispatch(new SelectHero(hero.id));
   }
 }
